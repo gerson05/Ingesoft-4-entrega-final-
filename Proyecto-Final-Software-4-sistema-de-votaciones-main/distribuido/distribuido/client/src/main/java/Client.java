@@ -1,24 +1,31 @@
-import Demo.PrinterPrx;
+import com.example.broker.Broker;
+import com.example.broker.BrokerImpl;
 import Demo.Response;
 import com.zeroc.Ice.Communicator;
-import com.zeroc.Ice.ObjectPrx;
 import com.zeroc.Ice.Util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
-public class Client
-{
+public class Client {
+    private Broker broker;
+    private ExecutorService executor;
+
+    public Client(Broker broker, int poolSize) {
+        this.broker = broker;
+        this.executor = Executors.newFixedThreadPool(poolSize);
+    }
+
     public static void main(String[] args) {
         Communicator communicator = null;
         try {
             communicator = Util.initialize(args, "config.client");
-            ObjectPrx base = communicator.stringToProxy("SimpleServer:default -p 9099");
-            PrinterPrx server = PrinterPrx.checkedCast(base);
-            if (server == null) throw new Error("Invalid proxy");
+            PrinterI server = new PrinterI();
+            Broker broker = new BrokerImpl(server);
+            Client client = new Client(broker, 10); // Create a thread pool with 10 threads
 
             while (true) {
                 Scanner scanner = new Scanner(System.in);
@@ -27,14 +34,15 @@ public class Client
                 try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
                     String cedula;
                     while ((cedula = reader.readLine()) != null) {
-                        // Enviar cada cédula al servidor
+                        // Enviar cada cédula al broker usando el thread pool
                         System.out.println("Consultando cédula: " + cedula);
-                        Response response = server.printString(cedula);
-                        System.out.println("Respuesta del servidor: " + response.value);
-                        System.out.println("Tiempo de espera: " + response.responseTime + "ms");
+                        Future<Response> future = client.executor.submit(new Task(client.broker, cedula));
+                        Response response = future.get(); // Esperar a que la tarea termine y obtener la respuesta
+                        System.out.println("Respuesta del servidor: " + response.getResults());
+                        System.out.println("Tiempo de espera: " + response.getResponseTime() + "ms");
                     }
-                } catch (IOException e) {
-                    System.out.println("Error al leer el archivo: " + e.getMessage());
+                } catch (IOException | InterruptedException | ExecutionException e) {
+                    System.out.println("Error al procesar la tarea: " + e.getMessage());
                 }
                 if (filePath.equals("exit")) {
                     break;
@@ -43,17 +51,10 @@ public class Client
             if (communicator != null) {
                 communicator.destroy();
             }
+            client.executor.shutdown(); // Cerrar el thread pool
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void logToClientAuditFile(String cedula, String mesa, boolean isPrime, long responseTime) {
-        try (FileWriter writer = new FileWriter("client_audit_log.csv", true)) {
-            writer.write(cedula + "," + mesa + "," + (isPrime ? 1 : 0) + "," + responseTime + "\n");
-        } catch (IOException e) {
-            System.out.println("Error escribiendo en el archivo de auditoría del cliente: " + e.getMessage());
         }
     }
 }
