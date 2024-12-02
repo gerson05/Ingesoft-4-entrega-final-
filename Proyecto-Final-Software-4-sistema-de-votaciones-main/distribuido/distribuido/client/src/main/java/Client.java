@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class Client implements Demo.Client {
+public class Client {
     private static ExecutorService executorService;
 
     public static void main(String[] args) {
@@ -28,29 +28,29 @@ public class Client implements Demo.Client {
             broker.registerClient(ClientPrx.uncheckedCast(clientProxy));
 
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Ingresa el número de hilos para el pool de consultas:");
+            System.out.println("Enter the number of threads for the query pool:");
             int numThreads = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
             executorService = Executors.newFixedThreadPool(numThreads);
 
             while (true) {
-                System.out.println("Ingresa la ruta del archivo con las cédulas:");
+                System.out.println("Enter the file path with the IDs:");
                 String filePath = scanner.nextLine();
                 if (filePath.equals("exit")) {
                     break;
                 }
                 try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-                    String cedula;
-                    while ((cedula = reader.readLine()) != null) {
-                        final String cedulaFinal = cedula;
+                    String id;
+                    while ((id = reader.readLine()) != null) {
+                        final String idFinal = id;
                         executorService.submit(() -> {
-                            System.out.println("Consultando cédula: " + cedulaFinal);
-                            broker.handleClient(clientProxy.ice_getIdentity().name, cedulaFinal);
+                            System.out.println("Querying ID: " + idFinal);
+                            broker.handleClient(clientProxy.ice_getIdentity().name, idFinal);
                         });
                     }
                 } catch (IOException e) {
-                    System.out.println("Error al leer el archivo: " + e.getMessage());
+                    System.out.println("Error reading the file: " + e.getMessage());
                 }
             }
 
@@ -64,11 +64,5 @@ public class Client implements Demo.Client {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void receiveResponse(String responseData, com.zeroc.Ice.Current current) {
-        System.out.println("Received response: " + responseData);
-        // Process the response
     }
 }
