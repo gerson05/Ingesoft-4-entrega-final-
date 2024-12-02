@@ -1,19 +1,20 @@
 import Demo.BrokerPrx;
 import Demo.ClientPrx;
-import Demo.PrinterPrx;
-import Demo.Response;
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.ObjectPrx;
 import com.zeroc.Ice.Util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class Client implements Demo.Client
-{
+public class Client implements Demo.Client {
+    private static ExecutorService executorService;
+
     public static void main(String[] args) {
         Communicator communicator = null;
         try {
@@ -26,23 +27,36 @@ public class Client implements Demo.Client
             ObjectPrx clientProxy = communicator.addWithUUID(client).ice_twoway();
             broker.registerClient(ClientPrx.uncheckedCast(clientProxy));
 
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Ingresa el número de hilos para el pool de consultas:");
+            int numThreads = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            executorService = Executors.newFixedThreadPool(numThreads);
+
             while (true) {
-                Scanner scanner = new Scanner(System.in);
                 System.out.println("Ingresa la ruta del archivo con las cédulas:");
                 String filePath = scanner.nextLine();
+                if (filePath.equals("exit")) {
+                    break;
+                }
                 try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
                     String cedula;
                     while ((cedula = reader.readLine()) != null) {
-                        System.out.println("Consultando cédula: " + cedula);
-                        broker.handleClient(clientProxy.ice_getIdentity().name, cedula);
+                        final String cedulaFinal = cedula;
+                        executorService.submit(() -> {
+                            System.out.println("Consultando cédula: " + cedulaFinal);
+                            broker.handleClient(clientProxy.ice_getIdentity().name, cedulaFinal);
+                        });
                     }
                 } catch (IOException e) {
                     System.out.println("Error al leer el archivo: " + e.getMessage());
                 }
-                if (filePath.equals("exit")) {
-                    break;
-                }
             }
+
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
             if (communicator != null) {
                 communicator.destroy();
             }
@@ -56,13 +70,5 @@ public class Client implements Demo.Client
     public void receiveResponse(String responseData, com.zeroc.Ice.Current current) {
         System.out.println("Received response: " + responseData);
         // Process the response
-    }
-
-    private void logToClientAuditFile(String cedula, String mesa, boolean isPrime, long responseTime) {
-        try (FileWriter writer = new FileWriter("client_audit_log.csv", true)) {
-            writer.write(cedula + "," + mesa + "," + (isPrime ? 1 : 0) + "," + responseTime + "\n");
-        } catch (IOException e) {
-            System.out.println("Error escribiendo en el archivo de auditoría del cliente: " + e.getMessage());
-        }
     }
 }
