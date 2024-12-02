@@ -14,7 +14,7 @@ public class Broker {
             // Create an object adapter with the name "Broker"
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(
                     "Broker",
-                    "tcp -p 10000"
+                    "tcp -p 9099"
             );
 
             // Create and add the Broker implementation

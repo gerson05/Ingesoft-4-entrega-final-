@@ -23,7 +23,7 @@ public class Client {
         Communicator communicator = null;
         try {
             communicator = Util.initialize(args, "config.client");
-            ObjectPrx base = communicator.stringToProxy("Broker:default -p 10000");
+            ObjectPrx base = communicator.stringToProxy("Broker:default -p 9099");
             BrokerPrx broker = BrokerPrx.checkedCast(base);
             if (broker == null) throw new Error("Invalid proxy");
 

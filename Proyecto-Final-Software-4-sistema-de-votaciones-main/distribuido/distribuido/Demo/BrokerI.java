@@ -5,7 +5,6 @@ import com.zeroc.Ice.Current;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BrokerI implements Demo.Broker {
     private Map<String, ClientPrx> clients = new HashMap<>();
     private Map<String, ServerPrx> servers = new HashMap<>();
 

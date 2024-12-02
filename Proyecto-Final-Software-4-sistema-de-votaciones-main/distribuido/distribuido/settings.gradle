@@ -12,4 +12,5 @@ include 'client'
 include 'server'
 include 'worker'
 include 'broker'
+include 'Demo'
 
