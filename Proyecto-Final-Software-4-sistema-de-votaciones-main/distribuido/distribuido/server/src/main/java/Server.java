@@ -5,8 +5,7 @@ import com.zeroc.Ice.ObjectAdapter;
 import com.zeroc.Ice.ObjectPrx;
 import com.zeroc.Ice.Util;
 
-public class Server implements Demo.Server
-{
+public class Server {
     public static void main(String[] args) {
         int status = 0;
         Communicator communicator = null;
@@ -32,14 +31,5 @@ public class Server implements Demo.Server
             communicator.destroy();
         }
         System.exit(status);
-    }
-
-    @Override
-    public void processRequest(String clientId, String requestData, com.zeroc.Ice.Current current) {
-        System.out.println("Processing request from client: " + clientId);
-        // Process the request and generate response
-        String responseData = clientId + ",response data";
-        BrokerPrx broker = BrokerPrx.checkedCast(current.con.createProxy(current.id));
-        broker.handleServer(current.id.name, responseData);
     }
 }
