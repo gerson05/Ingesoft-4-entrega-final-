@@ -23,15 +23,6 @@ module Demo
         void notifyTaskCompletion(string taskId);
     }
 
-    // Interfaz del Broker
-    interface Broker
-    {
-        void registerClient(Client* clientProxy);
-        void registerServer(Server* serverProxy);
-        void handleClient(string clientId, string requestData);
-        void handleServer(string serverId, string responseData);
-    }
-
     // Interfaz del Client
     interface Client
     {
@@ -42,5 +33,14 @@ module Demo
     interface Server
     {
         void processRequest(string clientId, string requestData);
+    }
+
+    // Interfaz del Broker
+    interface Broker
+    {
+        void registerClient(Client* clientProxy);
+        void registerServer(Server* serverProxy);
+        void handleClient(string clientId, string requestData);
+        void handleServer(string serverId, string responseData);
     }
 }
