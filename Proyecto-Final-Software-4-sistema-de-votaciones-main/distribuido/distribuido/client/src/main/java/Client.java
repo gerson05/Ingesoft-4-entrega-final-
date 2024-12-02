@@ -1,6 +1,9 @@
 import Demo.BrokerPrx;
+import Demo.ClientI;
 import Demo.ClientPrx;
 import com.zeroc.Ice.Communicator;
+import com.zeroc.Ice.Identity;
+import com.zeroc.Ice.ObjectAdapter;
 import com.zeroc.Ice.ObjectPrx;
 import com.zeroc.Ice.Util;
 
@@ -8,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,8 +27,18 @@ public class Client {
             BrokerPrx broker = BrokerPrx.checkedCast(base);
             if (broker == null) throw new Error("Invalid proxy");
 
+            ObjectAdapter adapter = communicator.createObjectAdapter("ClientAdapter");
+
             ClientI client = new ClientI();
-            ObjectPrx clientProxy = communicator.addWithUUID(client).ice_twoway();
+
+            Identity identity = new Identity(UUID.randomUUID().toString(), "Client");
+
+            adapter.add(client, identity);
+
+            ObjectPrx clientProxy = adapter.createDirectProxy(identity).ice_twoway();
+
+            adapter.activate();
+
             broker.registerClient(ClientPrx.uncheckedCast(clientProxy));
 
             Scanner scanner = new Scanner(System.in);

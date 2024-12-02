@@ -1,4 +1,5 @@
 import Demo.BrokerPrx;
+import Demo.ServerI;
 import Demo.ServerPrx;
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.ObjectAdapter;

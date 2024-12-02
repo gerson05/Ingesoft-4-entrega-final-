@@ -26,7 +26,12 @@ subprojects {
         implementation 'org.postgresql:postgresql:42.6.0'
     }
 
-    jar {
+    tasks.jar.enabled = false // Deshabilitamos la tarea jar estándar
+
+    shadowJar {
+        archiveBaseName.set(project.name)
+        archiveClassifier.set('') // Esto asegura que sea el JAR principal
+        archiveVersion.set('') // Sin versión en el nombre del JAR
         manifest {
             attributes(
                     "Main-Class": project.name.capitalize()
@@ -34,9 +39,7 @@ subprojects {
         }
     }
 
-    shadowJar {
-        archiveBaseName.set(project.name)
-        archiveClassifier.set('')
-        archiveVersion.set('')
+    tasks.build {
+        dependsOn shadowJar // Aseguramos que shadowJar se ejecute al construir
     }
 }

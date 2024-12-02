@@ -6,4 +6,4 @@ Broker.Endpoints=tcp -p 10000
 
 # Only listen on the ZeroTier's LIASOn1 interface by default.
 size=1000000000
-Ice.Default.Host=xhgrid2
+Ice.Default.Host=hgrid2
