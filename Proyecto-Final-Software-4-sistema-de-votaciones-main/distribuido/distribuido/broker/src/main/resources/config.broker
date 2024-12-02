@@ -1,0 +1,9 @@
+# config.broker
+
+# The broker creates one single object adapter with the name "Broker".
+# The following line sets the endpoints for this adapter.
+Broker.Endpoints=tcp -p 10000
+
+# Only listen on the ZeroTier's LIASOn1 interface by default.
+size=1000000000
+Ice.Default.Host=xhgrid2

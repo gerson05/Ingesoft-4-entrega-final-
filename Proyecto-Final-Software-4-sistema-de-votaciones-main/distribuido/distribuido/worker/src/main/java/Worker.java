@@ -1,7 +1,6 @@
 import Demo.PrinterPrx;
 import Demo.WorkerPrx;
 import com.zeroc.Ice.*;
-
 import java.lang.Exception;
 import java.net.InetAddress;
 import java.sql.Connection;

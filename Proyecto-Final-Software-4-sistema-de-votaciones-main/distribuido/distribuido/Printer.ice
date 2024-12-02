@@ -22,4 +22,25 @@ module Demo
         void receivePartialResult(string taskId, string partialResult);
         void notifyTaskCompletion(string taskId);
     }
+
+    // Interfaz del Broker
+    interface Broker
+    {
+        void registerClient(Client* clientProxy);
+        void registerServer(Server* serverProxy);
+        void handleClient(string clientId, string requestData);
+        void handleServer(string serverId, string responseData);
+    }
+
+    // Interfaz del Client
+    interface Client
+    {
+        void receiveResponse(string responseData);
+    }
+
+    // Interfaz del Server
+    interface Server
+    {
+        void processRequest(string clientId, string requestData);
+    }
 }
